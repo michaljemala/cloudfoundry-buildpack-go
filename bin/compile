@@ -10,8 +10,10 @@ function message {
 
 
 EXEC_DIR=$(cd $(dirname $0); pwd)
-BUILD_DIR=$(cd $1; pwd)
-CACHE_DIR=$(cd $2; pwd)
+mkdir -p "$1"
+BUILD_DIR=$(cd "$1"; pwd)
+mkdir -p "$2"
+CACHE_DIR=$(cd "$2"; pwd)
 
 message $EXEC_DIR
 message $BUILD_DIR
