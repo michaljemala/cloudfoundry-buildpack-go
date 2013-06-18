@@ -21,4 +21,3 @@ url=${GOURL:-http://go.googlecode.com/files/$file}
 buildpack=$(dirname $(dirname $0))
 
 find "$BUILD_DIR"
-message $files
