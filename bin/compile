@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+set -eo pipefail
+
+function message {
+  echo "$1"
+  sync
+}
+
+
+EXEC_DIR=$(cd $(dirname $0); pwd)
+BUILD_DIR=$(cd $1; pwd)
+CACHE_DIR=$(cd $2; pwd)
+
+message $EXEC_DIR
+message $BUILD_DIR
+message $CACHE_DIR
