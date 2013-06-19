@@ -1,23 +1,93 @@
-#!/usr/bin/env bash
-# bin/compile <build-dir> <cache-dir>
+#!/bin/bash
+# usage: bin/compile <build-dir> <cache-dir>
 
 set -eo pipefail
 
-function message {
-  echo "$1"
-  sync
-}
-
-
-EXEC_DIR=$(cd $(dirname $0); pwd)
-mkdir -p "$1"
-BUILD_DIR=$(cd "$1"; pwd)
-mkdir -p "$2"
-CACHE_DIR=$(cd "$2"; pwd)
-
+mkdir -p "$1" "$2"
+build=$(cd "$1/" && pwd)
+cache=$(cd "$2/" && pwd)
 ver=${GOVERSION:-1.1.1}
 file=${GOFILE:-go$ver.$(uname|tr A-Z a-z)-amd64.tar.gz}
 url=${GOURL:-http://go.googlecode.com/files/$file}
 buildpack=$(dirname $(dirname $0))
 
-find "$BUILD_DIR"
+# Python
+venv=$cache/venv
+mkdir -p $cache/pip
+PATH=$venv/bin:$PATH
+
+virtualenv() {
+    python "$buildpack/vendor/virtualenv-1.7/virtualenv.py" "$@"
+}
+
+if ! test -f $build/.godir
+then
+    echo >&2 " !     A .godir is required. For instructions:"
+    echo >&2 " !     http://mmcgrana.github.com/2012/09/getting-started-with-go-on-heroku"
+    exit 1
+fi
+
+if test -e $build/bin && ! test -d $build/bin
+then
+    echo >&2 " !     File bin exists and is not a directory."
+    exit 1
+fi
+
+if test -d $cache/go-$ver/go
+then
+    echo "-----> Using Go $ver"
+else
+    rm -rf $cache/* # be sure not to build up cruft
+    mkdir -p $cache/go-$ver
+    cd $cache/go-$ver
+    echo -n "-----> Installing Go $ver..."
+    curl -sO $url
+    tar zxf $file
+    rm -f $file
+    echo " done"
+fi
+
+GOROOT=$cache/go-$ver/go export GOROOT
+GOPATH=$build/.heroku/g export GOPATH
+PATH=$GOROOT/bin:$PATH
+
+# The Python version os 2.6.5
+echo "$(python --version 2>&1)"
+
+# TODO The CF v2 actual image is missing python-dev package therefore
+# native bindings cannot be build and the staging fails.
+# * Mercurial allows "pure" installation (not recommanded) but was not
+#     able to instruct pip to do so
+# * Bazaar has native bindings as well. Is there a way to avoid them?
+#if ! (which hg > /dev/null && which bzr > /dev/null)
+#then
+#    echo -n "       Installing Virtualenv..."
+#    virtualenv --distribute --never-download --prompt='(venv) ' $venv > /dev/null 2>&1
+#    . $venv/bin/activate > /dev/null 2>&1
+#    echo " done"
+#
+#    echo -n "       Installing Mercurial..."
+#    pip install --use-mirrors mercurial  2>&1
+#    echo " done"
+#
+#    echo -n "       Installing Bazaar..."
+#    pip install --use-mirrors bzr  2>&1
+#    echo " done"
+#fi
+
+name=$(cat $build/.godir)
+p=$GOPATH/src/$name
+mkdir -p $p
+cp -R $build/* $p
+
+unset GIT_DIR # unset git dir or it will mess with goinstall
+echo "-----> Running: go get -tags heroku ./..."
+cd $p
+go get -tags heroku ./...
+
+mkdir -p $build/bin
+mv $GOPATH/bin/* $build/bin
+rm -rf $build/.heroku
+
+mkdir -p $build/.profile.d
+echo 'export PATH=$PATH:$HOME/bin' > $build/.profile.d/go.sh
