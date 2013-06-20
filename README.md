@@ -2,7 +2,7 @@
 
 This is an experimental [Cloudfoundry buildpack][cloudfoundry-buildpack] for [Go][go].
 
-It is heavily based on existing [Heroku Buildpack][heroku-buildpack] created by Keith Rarick. However it had to be modified to accomodate to the fact that the current CF v2 stack does not come with installed Python header filess. Therefore Mercurial, as well as Bazaar, needs to be installed as a pure Python libs, i.e. without native C bindings.
+It is heavily based on existing [Heroku Buildpack][heroku-buildpack] created by Keith Rarick. However it had to be modified to accomodate to the fact that the current CF v2 stack does not come with installed Python header files. Therefore Mercurial, as well as Bazaar, needs to be installed as a pure Python libs, i.e. without native C bindings.
 
 In order to speed things up a bit the [compile][compile] script caches Go binaries as well as the Mercurial and Bazaar sources.
 
