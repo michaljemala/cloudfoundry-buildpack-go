@@ -8,7 +8,7 @@ In order to speed things up a bit the [compile][compile] script caches Go binari
 
 Besides the actual source code, the following files must be present in the root folder of your application:
 * .godir - contains the desired name of the final binary
-* Procfile - specify the type of the application and the actual command executed when the instance is started
+* Procfile - specifies the type of the application and the actual command executed when the instance is started
 
 ##Example
 ```
