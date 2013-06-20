@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # usage: bin/compile <build-dir> <cache-dir>
 
 set -eo pipefail
@@ -10,11 +10,7 @@ ver=${GOVERSION:-1.1.1}
 file=${GOFILE:-go$ver.$(uname|tr A-Z a-z)-amd64.tar.gz}
 url=${GOURL:-http://go.googlecode.com/files/$file}
 buildpack=$(dirname $(dirname $0))
-
-# Python
 venv=$cache/venv
-mkdir -p $cache/pip
-PATH=$venv/bin:$PATH
 
 virtualenv() {
     python "$buildpack/vendor/virtualenv-1.7/virtualenv.py" "$@"
@@ -22,8 +18,8 @@ virtualenv() {
 
 if ! test -f $build/.godir
 then
-    echo >&2 " !     A .godir is required. For instructions:"
-    echo >&2 " !     http://mmcgrana.github.com/2012/09/getting-started-with-go-on-heroku"
+    echo >&2 " !     A .godir is required. For instructions visit"
+    echo >&2 " !     https://github.com/michaljemala/cloudfoundry-buildpack-go"
     exit 1
 fi
 
@@ -33,61 +29,90 @@ then
     exit 1
 fi
 
-if test -d $cache/go-$ver/go
+# Download (if not cached) and install Go
+if test -d $cache/go
 then
-    echo "-----> Using Go $ver"
+    v=$(cat $cache/go/VERSION)
+    echo "-----> Using Go ${v:2:${#v}}"
 else
-    rm -rf $cache/* # be sure not to build up cruft
-    mkdir -p $cache/go-$ver
-    cd $cache/go-$ver
+    rm -rf $cache/go
+    mkdir -p $cache/go
     echo -n "-----> Installing Go $ver..."
+    ts=`date +%s`
     curl -sO $url
-    tar zxf $file
+    tar -C $cache/go -zxf $file --strip-components=1
     rm -f $file
+    te=`date +%s`
+    echo " done in $(($te-$ts))s"
+fi
+export GOROOT=$cache/go
+export GOPATH=$build/.cf/go
+
+# Check if Mercurial and Bazaar are installed
+if ! (which hg > /dev/null && which bzr > /dev/null)
+then
+    echo -n "-----> Installing Virtualenv..."
+    rm -rf $venv
+    virtualenv --distribute --never-download --prompt='(venv) ' $venv > /dev/null 2>&1
+    source $venv/bin/activate > /dev/null 2>&1
+    echo " done"
+    PATH=$venv/bin:$PATH
+
+    # Download (if not cached) and install pure hg binary
+    if ! test -d $cache/mercurial
+    then
+        echo -n "-----> Downloading Mercurial sources..."
+        ts=`date +%s`
+        pip install --download=$cache mercurial > /dev/null 2>&1
+        mkdir  $cache/mercurial
+        tar -C $cache/mercurial -zxf $cache/mercurial*.tar.gz --strip-components=1
+        rm -R  $cache/mercurial*.tar.gz
+        te=`date +%s`
+        echo " done in $(($te-$ts))s"
+    fi
+    echo -n "-----> Installing Mercurial..."
+    cd $cache/mercurial
+    python setup.py --pure install > /dev/null 2>&1
+    cd ../../
+    echo " done"
+    
+    # Download (if not cached) and install pure bzr binary
+    if ! test -d $cache/bazaar
+    then
+        echo -n "-----> Downloading Bazaar sources..."
+        ts=`date +%s`
+        pip install --download=$cache bzr > /dev/null 2>&1
+        mkdir  $cache/bazaar
+        tar -C $cache/bazaar -zxf $cache/bzr*.tar.gz --strip-components=1
+        rm -R  $cache/bzr*.tar.gz
+        te=`date +%s`
+        echo " done in $(($te-$ts))s"
+    fi
+    echo -n "-----> Installing Bazaar..."
+    cd $cache/bazaar
+    python setup.py install build_ext --allow-python-fallback > /dev/null 2>&1
+    cd ../../
     echo " done"
 fi
-
-GOROOT=$cache/go-$ver/go export GOROOT
-GOPATH=$build/.heroku/g export GOPATH
-PATH=$GOROOT/bin:$PATH
-
-# The Python version os 2.6.5
-echo "$(python --version 2>&1)"
-
-# TODO The CF v2 actual image is missing python-dev package therefore
-# native bindings cannot be build and the staging fails.
-# * Mercurial allows "pure" installation (not recommanded) but was not
-#     able to instruct pip to do so
-# * Bazaar has native bindings as well. Is there a way to avoid them?
-#if ! (which hg > /dev/null && which bzr > /dev/null)
-#then
-#    echo -n "       Installing Virtualenv..."
-#    virtualenv --distribute --never-download --prompt='(venv) ' $venv > /dev/null 2>&1
-#    . $venv/bin/activate > /dev/null 2>&1
-#    echo " done"
-#
-#    echo -n "       Installing Mercurial..."
-#    pip install --use-mirrors mercurial  2>&1
-#    echo " done"
-#
-#    echo -n "       Installing Bazaar..."
-#    pip install --use-mirrors bzr  2>&1
-#    echo " done"
-#fi
 
 name=$(cat $build/.godir)
 p=$GOPATH/src/$name
 mkdir -p $p
 cp -R $build/* $p
 
+PATH=$GOROOT/bin:$PATH
+
 unset GIT_DIR # unset git dir or it will mess with goinstall
-echo "-----> Running: go get -tags heroku ./..."
+echo -n "-----> Running 'go get -tags cf ./...'..."
+ts=`date +%s`
 cd $p
-go get -tags heroku ./...
+go get -tags cf ./...
+te=`date +%s`
+echo " done in $(($te-$ts))s"
 
 mkdir -p $build/bin
 mv $GOPATH/bin/* $build/bin
-rm -rf $build/.heroku
+rm -rf $build/.cf
 
 mkdir -p $build/.profile.d
 echo 'export PATH=$PATH:$HOME/bin' > $build/.profile.d/go.sh
