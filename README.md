@@ -14,7 +14,7 @@ Besides the actual source code, the following files must be present in the root 
 ```
 $ git clone https://github.com/michaljemala/hello-go.git
 $ cd hello-go/
-$  cf push --buildpack https://github.com/michaljemala/cloudfoundry-buildpack-go.git --name <APP_NAME> --instances 1 --memory 64M --domain cfapps.io --host <APP_NAME> --force
+$ cf push --buildpack https://github.com/michaljemala/cloudfoundry-buildpack-go.git --name <APP_NAME> --instances 1 --memory 64M --domain cfapps.io --host <APP_NAME> --force
 Creating <APP_NAME>... OK
 
 Binding <SUBDOMAIN_NAME>.cfapps.io to <APP_NAME>... OK
