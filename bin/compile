@@ -33,17 +33,17 @@ fi
 if test -d $cache/go
 then
     v=$(cat $cache/go/VERSION)
-    echo "-----> Using Go ${v:2:${#v}}"
+    echo " Using Go ${v:2:${#v}}"
 else
     rm -rf $cache/go
     mkdir -p $cache/go
-    echo -n "-----> Installing Go $ver..."
+    echo -n " Installing Go $ver..."
     ts=`date +%s`
     curl -sO $url
     tar -C $cache/go -zxf $file --strip-components=1
     rm -f $file
     te=`date +%s`
-    echo " done in $(($te-$ts))s"
+    echo "  done in $(($te-$ts))s"
 fi
 export GOROOT=$cache/go
 export GOPATH=$build/.cf/go
@@ -51,48 +51,48 @@ export GOPATH=$build/.cf/go
 # Check if Mercurial and Bazaar are installed
 if ! (which hg > /dev/null && which bzr > /dev/null)
 then
-    echo -n "-----> Installing Virtualenv..."
+    echo -n " Installing Virtualenv..."
     rm -rf $venv
     virtualenv --distribute --never-download --prompt='(venv) ' $venv > /dev/null 2>&1
     source $venv/bin/activate > /dev/null 2>&1
-    echo " done"
+    echo "  done"
     PATH=$venv/bin:$PATH
 
     # Download (if not cached) and install pure hg binary
     if ! test -d $cache/mercurial
     then
-        echo -n "-----> Downloading Mercurial sources..."
+        echo -n " Downloading Mercurial sources..."
         ts=`date +%s`
         pip install --download=$cache mercurial > /dev/null 2>&1
         mkdir  $cache/mercurial
         tar -C $cache/mercurial -zxf $cache/mercurial*.tar.gz --strip-components=1
         rm -R  $cache/mercurial*.tar.gz
         te=`date +%s`
-        echo " done in $(($te-$ts))s"
+        echo "  done in $(($te-$ts))s"
     fi
-    echo -n "-----> Installing Mercurial..."
+    echo -n " Installing Mercurial..."
     cd $cache/mercurial
     python setup.py --pure install > /dev/null 2>&1
     cd ../../
-    echo " done"
+    echo "  done"
     
     # Download (if not cached) and install pure bzr binary
     if ! test -d $cache/bazaar
     then
-        echo -n "-----> Downloading Bazaar sources..."
+        echo -n " Downloading Bazaar sources..."
         ts=`date +%s`
         pip install --download=$cache bzr > /dev/null 2>&1
         mkdir  $cache/bazaar
         tar -C $cache/bazaar -zxf $cache/bzr*.tar.gz --strip-components=1
         rm -R  $cache/bzr*.tar.gz
         te=`date +%s`
-        echo " done in $(($te-$ts))s"
+        echo "  done in $(($te-$ts))s"
     fi
-    echo -n "-----> Installing Bazaar..."
+    echo -n " Installing Bazaar..."
     cd $cache/bazaar
     python setup.py install build_ext --allow-python-fallback > /dev/null 2>&1
     cd ../../
-    echo " done"
+    echo "  done"
 fi
 
 name=$(cat $build/.godir)
@@ -103,12 +103,12 @@ cp -R $build/* $p
 PATH=$GOROOT/bin:$PATH
 
 unset GIT_DIR # unset git dir or it will mess with goinstall
-echo -n "-----> Running 'go get -tags cf ./...'..."
+echo -n " Running 'go get -tags cf ./...'..."
 ts=`date +%s`
 cd $p
 go get -tags cf ./...
 te=`date +%s`
-echo " done in $(($te-$ts))s"
+echo "  done in $(($te-$ts))s"
 
 mkdir -p $build/bin
 mv $GOPATH/bin/* $build/bin
