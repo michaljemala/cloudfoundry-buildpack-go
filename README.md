@@ -10,6 +10,16 @@ Besides the actual source code, the following files must be present in the root 
 * .godir - contains the desired name of the final binary
 * Procfile - specifies the type of the application and the actual command executed when the instance is started
 
+##godep support
+
+This buildpack includes support for optionally using [godep][godep]. If your repository includes a `Godeps` file created via:
+
+```
+$ godep save -copy=false
+```
+
+..then the buildpack will `go get` the godep tool, run `godep restore`, and `go install` on your app before finalizing the droplet.
+
 ##Example
 ```
 $ git clone https://github.com/michaljemala/hello-go.git
