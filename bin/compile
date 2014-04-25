@@ -75,7 +75,7 @@ then
     python setup.py --pure install > /dev/null 2>&1
     cd ../../
     echo "  done"
-    
+
     # Download (if not cached) and install pure bzr binary
     if ! test -d $cache/bazaar
     then
@@ -103,12 +103,31 @@ cp -R $build/* $p
 PATH=$GOROOT/bin:$PATH
 
 unset GIT_DIR # unset git dir or it will mess with goinstall
-echo -n " Running 'go get -tags cf ./...'..."
-ts=`date +%s`
-cd $p
-go get -tags cf ./...
-te=`date +%s`
-echo "  done in $(($te-$ts))s"
+
+# If Godeps file present, use godep to fetch dependencies,
+# otherwise use straight up "go get"
+if test -d $p/Godeps
+then
+    echo -n " Fetching godep..."
+    ts=`date +%s`
+    go get github.com/tools/godep
+    te=`date +%s`
+    echo "  done in $(($te-$ts))s"
+
+    echo -n " Running godep restore..."
+    ts=`date +%s`
+    cd $p
+    godep restore
+    te=`date +%s`
+    echo "  done in $(($te-$ts))s"
+else
+    echo -n " Running 'go get -tags cf ./...'..."
+    ts=`date +%s`
+    cd $p
+    go get -tags cf ./...
+    te=`date +%s`
+    echo "  done in $(($te-$ts))s"
+fi
 
 mkdir -p $build/bin
 mv $GOPATH/bin/* $build/bin
