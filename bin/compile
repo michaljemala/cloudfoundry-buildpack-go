@@ -106,7 +106,7 @@ unset GIT_DIR # unset git dir or it will mess with goinstall
 
 # If Godeps file present, use godep to fetch dependencies,
 # otherwise use straight up "go get"
-if test -d $p/Godeps
+if test -f $p/Godeps
 then
     echo -n " Fetching godep..."
     ts=`date +%s`
