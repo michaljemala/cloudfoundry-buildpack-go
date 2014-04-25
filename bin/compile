@@ -121,6 +121,12 @@ then
     godep restore
     te=`date +%s`
     echo "  done in $(($te-$ts))s"
+
+    echo -n " Running 'go install'..."
+    ts=`date +%s`
+    go install
+    te=`date +%s`
+    echo "  done in $(($te-$ts))s"
 else
     echo -n " Running 'go get -tags cf ./...'..."
     ts=`date +%s`
