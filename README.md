@@ -61,3 +61,4 @@ Server: XMS (724Solutions HTA XMP_40_M2_B083 20091027.165340)
 [cloudfoundry-buildpack]: http://docs.cloudfoundry.com/docs/using/deploying-apps/buildpacks.html
 [heroku-buildpack]: https://github.com/kr/heroku-buildpack-go.git
 [compile]: https://github.com/michaljemala/cloudfoundry-buildpack-go/blob/master/bin/compile
+[godep]: https://github.com/tools/godep
