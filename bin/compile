@@ -101,6 +101,7 @@ mkdir -p $p
 cp -R $build/* $p
 
 PATH=$GOROOT/bin:$PATH
+PATH=$GOPATH/bin:$PATH
 
 unset GIT_DIR # unset git dir or it will mess with goinstall
 
