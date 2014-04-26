@@ -24,37 +24,58 @@ $ godep save -copy=false
 ```
 $ git clone https://github.com/michaljemala/hello-go.git
 $ cd hello-go/
-$ cf push --buildpack https://github.com/michaljemala/cloudfoundry-buildpack-go.git --name <APP_NAME> --instances 1 --memory 64M --domain cfapps.io --host <SUBDOMAIN_NAME> --force
-Creating <APP_NAME>... OK
+$ cf push
+Using manifest file /Users/misiak/Work/Projects/Go/src/github.com/michaljemala/hello-go/manifest.yml
 
-Binding <SUBDOMAIN_NAME>.cfapps.io to <APP_NAME>... OK
-Uploading <APP_NAME>... OK
-Starting <APP_NAME>... OK
------> Downloaded app package (4.0K)
-Initialized empty Git repository in /tmp/buildpacks/cloudfoundry-buildpack-go.git/.git/
-Installing cloudfoundry-buildpack-go.git.
------> Installing Go 1.1.1... done in 47s
------> Installing Virtualenv... done
------> Downloading Mercurial sources... done in 19s
------> Installing Mercurial... done
------> Downloading Bazaar sources... done in 12s
------> Installing Bazaar... done
------> Running 'go get -tags cf ./...'... done in 31s
------> Uploading staged droplet (1.4M)
------> Uploaded droplet
-Checking <APP_NAME>...
-Staging in progress...
-Staging in progress...
-Staging in progress...
-  0/1 instances: 1 starting
-  1/1 instances: 1 running
+Creating app hello-go in org mjemala-org / space development as mjemala@gopivotal.com...
 OK
-$ curl -I http://<SUBDOMAIN_NAME>.cfapps.io/
+
+Creating route hello-go-trigonal-hauerite.cfapps.io...
+OK
+
+Binding hello-go-trigonal-hauerite.cfapps.io to hello-go...
+OK
+
+Uploading hello-go...
+Uploading app files from: /Users/misiak/Work/Projects/Go/src/github.com/michaljemala/hello-go
+Uploading 1.6K, 4 files
+OK
+
+Starting app hello-go in org mjemala-org / space development as mjemala@gopivotal.com...
+OK
+-----> Downloaded app package (4.0K)
+Cloning into '/tmp/buildpacks/cloudfoundry-buildpack-go'...
+ Installing Go 1.2.1...  done in 5s
+ Installing Virtualenv...  done
+ Downloading Mercurial sources...  done in 1s
+ Installing Mercurial...  done
+ Downloading Bazaar sources...  done in 14s
+ Installing Bazaar...  done
+ Running 'go get -tags cf ./...'...  done in 33s
+-----> Uploading droplet (2.0M)
+
+0 of 1 instances running, 1 down
+0 of 1 instances running, 1 down
+1 of 1 instances running
+
+App started
+
+Showing health and status for app hello-go in org mjemala-org / space development as mjemala@gopivotal.com...
+OK
+
+requested state: started
+instances: 1/1
+usage: 8M x 1 instances
+urls: hello-go-trigonal-hauerite.cfapps.io
+
+     state     since                    cpu    memory       disk
+#0   running   2014-04-26 11:10:07 AM   0.0%   7.9M of 8M   7.9M of 1G
+$ curl -I http://hello-go-trigonal-hauerite.cfapps.io/
 HTTP/1.1 200 OK
-Transfer-Encoding: chunked
+Content-length: 955
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 26 Apr 2014 17:13:16 GMT
 Connection: keep-alive
-Date: Wed, 19 Jun 2013 17:36:42 GMT
-Server: XMS (724Solutions HTA XMP_40_M2_B083 20091027.165340)
 ```
 
 [go]: http://golang.org/
