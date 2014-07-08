@@ -6,7 +6,7 @@ set -eo pipefail
 mkdir -p "$1" "$2"
 build=$(cd "$1/" && pwd)
 cache=$(cd "$2/" && pwd)
-ver=${GOVERSION:-1.2.2}
+ver=${GOVERSION:-1.3}
 file=${GOFILE:-go$ver.$(uname|tr A-Z a-z)-amd64.tar.gz}
 url=${GOURL:-https://storage.googleapis.com/golang/$file}
 buildpack=$(dirname $(dirname $0))
